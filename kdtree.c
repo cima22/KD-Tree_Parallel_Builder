@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
  
  knode * kd_tree = build_kdtree(points, 1, NDIM, -1);
  
- printf("Axis = %d, Split = (%f,%f)", kd_tree[0]->axis, kd_tree[0]->split[0], kd_tree[0]->split[1]);
+ printf("Axis = %d, Split = (%f,%f)\n", kd_tree[0].axis, kd_tree[0].split[0], kd_tree[0].split[1]);
 
  return 0;
 }
@@ -76,7 +76,26 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
   leaf -> right = NULL;
   return leaf;
  }
-return NULL;
+
+ knode * node = (knode *) malloc(sizeof(knode));
+ if(node == NULL){
+  printf("Problem with malloc()");
+  return -1;
+ }
+
+ int my_axis = choose_splitting_dimension(axis, ndim);
+ kpoint * my_point = choose_splitting_point(points, n, ndim, axis);
+
+ kpoint * left_points, *right_points;
+ int N_left, N_right;
+
+ node -> axis = my_axis;
+ node -> split = my_point;
+
+ node -> left = build_kdtree(left_points, N_left, ndim, my_axis);
+ node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
+ 
+ return node;
 }
 
 int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
