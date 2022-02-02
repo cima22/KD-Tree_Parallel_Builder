@@ -38,10 +38,10 @@ int main(int argc, char* argv[]){
 
  kpoint * points = initialize();
  
- for(int i = 0; i < N; i++){
- printf("%f - %f\n", points[i][0], points[i][1]);
- }
+ knode * kd_tree = build_kdtree(points, 1, NDIM, -1);
  
+ printf("Axis = %d, Split = (%f,%f)", kd_tree[0]->axis, kd_tree[0]->split[0], kd_tree[0]->split[1]);
+
  return 0;
 }
 
@@ -68,6 +68,15 @@ kpoint * initialize(){
 
 knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  
+ if(n == 1){
+  knode * leaf = (knode *) malloc(sizeof(knode));
+  leaf -> axis = axis;
+  memcpy(leaf->split, points, sizeof(kpoint *));
+  leaf -> left = NULL;
+  leaf -> right = NULL;
+  return leaf;
+ }
+return NULL;
 }
 
 int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
