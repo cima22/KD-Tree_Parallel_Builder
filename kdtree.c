@@ -42,5 +42,8 @@ int main(int argc, char* argv[]){
 int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
 
 kpoint* choose_splitting_point(kpoint* points, int N, int ndim, int axis){
+ 
+ 
+
  return NULL;
 }
