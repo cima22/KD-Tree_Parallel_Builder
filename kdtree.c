@@ -33,6 +33,12 @@ kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
 kpoint * initialize();
 
+void my_qsort(kpoint * points, int n, int el_len, int axis);
+
+int comp_x(const void * el1, const void * el2);
+
+int comp_y(const void * el1, const void * el2);
+
 //---------------------- Main -----------------------------------------------------------------
 
 int main(int argc, char* argv[]){
@@ -87,10 +93,8 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  int my_axis = choose_splitting_dimension(axis, ndim);
  kpoint * my_point = choose_splitting_point(points, n, ndim, axis);
 
- kpoint * left_points, *right_points;
-
  int N_left, N_right;
- int median_index = (int) (n/2)
+ int median_index = (int) (n/2);
  N_left = median_index; // #points before median
  N_right = ndim % 2 == 0 ? median_index - 1 : median_index; // points after median 
 
@@ -101,7 +105,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(my_point));
 
- node -> left = build_kdtree(left_points, N_left,:w ndim, my_axis);
+ node -> left = build_kdtree(left_points, N_left, ndim, my_axis);
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
  
  return node;
@@ -113,9 +117,36 @@ kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
  
  //sort points
   
- kpoint * median = (kpoint*) points[(int) floor(n/2)]; // median of the sorted points
+ kpoint * median = (kpoint*) points[(int) (n/2)]; // median of the sorted points
 
  return median;
 
  return NULL;
+}
+
+void my_qsort(kpoint * points, int n, int el_len, int axis){
+ if(axis == 0)
+  qsort(points, n, el_len, comp_x);
+ else if (axis == 1)
+  qsort(points, n, el_len, comp_y);
+}
+
+int comp_x(const void * el1, const void * el2){
+ 
+ float_t val1 = *((kpoint *) el1)[0];
+ float_t val2 = *((kpoint *) el2)[0];
+
+ if(val1 > val2) return 1;
+ if(val2 < val1) return -1;
+ return 0;
+}
+
+int comp_y(const void * el1, const void * el2){
+ 
+ float_t val1 = *((kpoint *) el1)[1];
+ float_t val2 = *((kpoint *) el2)[1];
+
+ if(val1 > val2) return 1;
+ if(val2 < val1) return -1;
+ return 0;
 }
