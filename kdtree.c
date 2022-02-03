@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <omp.h>
 
 #if !defined(DOUBLE_PRECISION)
@@ -16,7 +17,7 @@ typedef double float_t;
 
 typedef float_t kpoint[NDIM];
 
-typedef struct {
+typedef struct knode{
 	int axis;
 	kpoint split;
 	struct knode *left, *right;
@@ -38,9 +39,9 @@ int main(int argc, char* argv[]){
 
  kpoint * points = initialize();
  
- knode * kd_tree = build_kdtree(points, 1, NDIM, -1);
- 
- printf("Axis = %d, Split = (%f,%f)\n", kd_tree[0].axis, kd_tree[0].split[0], kd_tree[0].split[1]);
+ //knode * kd_tree = build_kdtree(points, 1, N, DIM, -1);
+ printf("points[0] = %p, points[0][0] = %f, points[0][1] = %f", points[0],  points[0][0], points[0][1]);
+ //printf("Axis = %d, Split = (%f,%f)\n", kd_tree[0].axis, kd_tree[0].split[0], kd_tree[0].split[1]);
 
  return 0;
 }
@@ -80,19 +81,27 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  knode * node = (knode *) malloc(sizeof(knode));
  if(node == NULL){
   printf("Problem with malloc()");
-  return -1;
+  return NULL;
  }
 
  int my_axis = choose_splitting_dimension(axis, ndim);
  kpoint * my_point = choose_splitting_point(points, n, ndim, axis);
 
  kpoint * left_points, *right_points;
+
  int N_left, N_right;
+ int median_index = (int) (n/2)
+ N_left = median_index; // #points before median
+ N_right = ndim % 2 == 0 ? median_index - 1 : median_index; // points after median 
+
+ kpoint * left_points, * right_points;
+ left_points = (kpoint *) points;
+ right_points = (kpoint *) (points) + N_left + 1;
 
  node -> axis = my_axis;
- node -> split = my_point;
+ memcpy(node -> split, my_point, sizeof(my_point));
 
- node -> left = build_kdtree(left_points, N_left, ndim, my_axis);
+ node -> left = build_kdtree(left_points, N_left,:w ndim, my_axis);
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
  
  return node;
@@ -103,10 +112,10 @@ int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
 kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
  
  //sort points
- //
- //choose median [n/2] or [floor(n/2)]
- //
- //return median
+  
+ kpoint * median = (kpoint*) points[(int) floor(n/2)]; // median of the sorted points
+
+ return median;
 
  return NULL;
 }
