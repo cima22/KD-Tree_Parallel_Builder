@@ -39,20 +39,28 @@ int comp_x(const void * el1, const void * el2);
 
 int comp_y(const void * el1, const void * el2);
 
+void print_tree(knode * tree);
+
 //---------------------- Main -----------------------------------------------------------------
 
 int main(int argc, char* argv[]){
 
  kpoint * points = initialize();
  
- //knode * kd_tree = build_kdtree(points, 1, N, DIM, -1);
- printf("points[0] = %p, points[0][0] = %f, points[0][1] = %f", points[0],  points[0][0], points[0][1]);
- //printf("Axis = %d, Split = (%f,%f)\n", kd_tree[0].axis, kd_tree[0].split[0], kd_tree[0].split[1]);
+// for(int i = 0; i < N; i++)
+ //	 printf("(%f, %f)\n", points[i][0], points[i][1]);
+ //printf("\n\n\n");
+
+ knode * kd_tree = build_kdtree(points, N, NDIM, -1);
+//printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
+ print_tree(kd_tree);
 
  return 0;
 }
 
 //----------------------- Functions -----------------------------------------------------------
+
+// initialize() ----------------------------------------------------------------
 
 kpoint * initialize(){
  
@@ -73,14 +81,19 @@ kpoint * initialize(){
  return points;
 }
 
+// build_kdtree() -------------------------------------------------------------
+
 knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  
+ if(n == 0){ return NULL;}
+
  if(n == 1){
   knode * leaf = (knode *) malloc(sizeof(knode));
   leaf -> axis = axis;
   memcpy(leaf->split, points, sizeof(kpoint *));
   leaf -> left = NULL;
   leaf -> right = NULL;
+  //printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
   return leaf;
  }
 
@@ -91,7 +104,8 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  }
 
  int my_axis = choose_splitting_dimension(axis, ndim);
- kpoint * my_point = choose_splitting_point(points, n, ndim, axis);
+
+ kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
  int N_left, N_right;
  int median_index = (int) (n/2);
@@ -103,7 +117,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  right_points = (kpoint *) (points) + N_left + 1;
 
  node -> axis = my_axis;
- memcpy(node -> split, my_point, sizeof(my_point));
+ memcpy(node -> split, my_point, sizeof(kpoint *));
 
  node -> left = build_kdtree(left_points, N_left, ndim, my_axis);
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
@@ -111,18 +125,28 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  return node;
 }
 
+// choose_splitting_dimension() --------------------------------------------------------
+
 int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
+
+// choose_splitting_point() -----------------------------------------------------------
 
 kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
  
- //sort points
-  
+ my_qsort(points, n, sizeof(kpoint), axis);
+ 
+ //printf("\n\n");
+ //for(int i = 0; i < n; i++)
+ //	 printf("(%f, %f)\n", points[i][0], points[i][1]);
+ //printf("\n\n");
+
  kpoint * median = (kpoint*) points[(int) (n/2)]; // median of the sorted points
 
  return median;
 
- return NULL;
 }
+
+// my_qsort() ---------------------------------------------------------------------------
 
 void my_qsort(kpoint * points, int n, int el_len, int axis){
  if(axis == 0)
@@ -133,20 +157,28 @@ void my_qsort(kpoint * points, int n, int el_len, int axis){
 
 int comp_x(const void * el1, const void * el2){
  
- float_t val1 = *((kpoint *) el1)[0];
- float_t val2 = *((kpoint *) el2)[0];
+ float_t val1 = (*((kpoint *) el1))[0];
+ float_t val2 = (*((kpoint *) el2))[0];
 
- if(val1 > val2) return 1;
- if(val2 < val1) return -1;
- return 0;
+ return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
 }
 
 int comp_y(const void * el1, const void * el2){
  
- float_t val1 = *((kpoint *) el1)[1];
- float_t val2 = *((kpoint *) el2)[1];
+ float_t val1 = (*((kpoint *) el1))[1];
+ float_t val2 = (*((kpoint *) el2))[1];
 
- if(val1 > val2) return 1;
- if(val2 < val1) return -1;
- return 0;
+ return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
+}
+
+void print_tree(knode * tree){
+ printf("\n(%f, %f) - Axis = %d", tree->split[0], tree->split[1], tree->axis);
+ if(tree->left != NULL){
+  printf("\nLeft Branch:");
+  print_tree(tree->left);
+ }
+if(tree->right != NULL){
+ printf("\nRight branch:");
+ print_tree(tree->right);
+}
 }

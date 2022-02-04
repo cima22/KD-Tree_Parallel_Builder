@@ -9,10 +9,8 @@ int comp_x(const void * el1, const void * el2){
 
  float val1 = *((kpoint *) el1)[0];
  float val2 = *((kpoint *) el2)[0];
-
- if(val1 > val2) return 1;
- if(val1 < val2) return -1;
- return 0;
+ return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
+ 
 }
 
 int main(){
@@ -32,7 +30,7 @@ int main(){
   printf("%d - (%f, %f)\n", i, points[i][0], points[i][1]);
  }
 
- qsort(points, N, sizeof(kpoint *), comp_x);
+ qsort(points, N, sizeof(kpoint*), comp_x);
 
  int median_index = (int) N/2;
  
