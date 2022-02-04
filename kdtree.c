@@ -47,12 +47,12 @@ int main(int argc, char* argv[]){
 
  kpoint * points = initialize();
  
-// for(int i = 0; i < N; i++)
- //	 printf("(%f, %f)\n", points[i][0], points[i][1]);
- //printf("\n\n\n");
+for(int i = 0; i < N; i++)
+ printf("(%f, %f)\n", points[i][0], points[i][1]);
+printf("\n\n\n");
 
  knode * kd_tree = build_kdtree(points, N, NDIM, -1);
-//printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
+ //printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
  print_tree(kd_tree);
 
  return 0;
@@ -87,6 +87,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  
  if(n == 0){ return NULL;}
 
+
  if(n == 1){
   knode * leaf = (knode *) malloc(sizeof(knode));
   leaf -> axis = axis;
@@ -98,7 +99,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  }
 
  knode * node = (knode *) malloc(sizeof(knode));
- if(node == NULL){
+  if(node == NULL){
   printf("Problem with malloc()");
   return NULL;
  }
@@ -107,19 +108,24 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
 
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
+ printf("\n\n%d\n", n);
+  for(int i = 0; i < n; i++)
+   printf("(%f, %f)\n", points[i][0], points[i][1]);
+ printf("\n\n");
+
  int N_left, N_right;
  int median_index = (int) (n/2);
  N_left = median_index; // #points before median
- N_right = ndim % 2 == 0 ? median_index - 1 : median_index; // points after median 
+ N_right = n % 2 == 0 ? median_index - 1 : median_index; // points after median 
 
  kpoint * left_points, * right_points;
- left_points = (kpoint *) points;
+ left_points  = (kpoint *) points;
  right_points = (kpoint *) (points) + N_left + 1;
 
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
- node -> left = build_kdtree(left_points, N_left, ndim, my_axis);
+ node -> left  = build_kdtree(left_points, N_left, ndim, my_axis);
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
  
  return node;
@@ -134,11 +140,6 @@ int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
 kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
  
  my_qsort(points, n, sizeof(kpoint), axis);
- 
- //printf("\n\n");
- //for(int i = 0; i < n; i++)
- //	 printf("(%f, %f)\n", points[i][0], points[i][1]);
- //printf("\n\n");
 
  kpoint * median = (kpoint*) points[(int) (n/2)]; // median of the sorted points
 
