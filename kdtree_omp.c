@@ -11,7 +11,7 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-#define N 10
+#define N 10000000
 
 //-------------------- Data Structures --------------------------------------------------------
 
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
  knode * kd_tree = build_kdtree(points, N, NDIM, -1);
  //printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
  //print_tree(kd_tree);
- printf("\ntime: %f", omp_get_wtime() - start);
+ printf("time: %f\n", omp_get_wtime() - start);
 
  return 0;
 }
