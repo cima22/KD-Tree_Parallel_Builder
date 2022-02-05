@@ -11,7 +11,7 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-#define N 1000
+#define N 10
 
 //-------------------- Data Structures --------------------------------------------------------
 
@@ -47,15 +47,15 @@ int main(int argc, char* argv[]){
 
  kpoint * points = initialize();
  
-//for(int i = 0; i < N; i++)
-// printf("(%f, %f)\n", points[i][0], points[i][1]);
-//printf("\n\n\n");
-
+ //for(int i = 0; i < N; i++)
+ // printf("(%f, %f)\n", points[i][0], points[i][1]);
+ //printf("\n\n\n");
  double start = omp_get_wtime();
  knode * kd_tree = build_kdtree(points, N, NDIM, -1);
  //printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
-// print_tree(kd_tree);
- printf("\n%f", omp_get_wtime() - start);
+ //print_tree(kd_tree);
+ printf("\ntime: %f", omp_get_wtime() - start);
+
  return 0;
 }
 
@@ -95,7 +95,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
   memcpy(leaf->split, points, sizeof(kpoint *));
   leaf -> left = NULL;
   leaf -> right = NULL;
-  // printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
+ // printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
   return leaf;
  }
 
@@ -109,13 +109,14 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
 
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
- //printf("\n\n%d\n", n);
- // for(int i = 0; i < n; i++)
- //  printf("(%f, %f)\n", points[i][0], points[i][1]);
- //printf("\n\n");
+// printf("\n\n%d\n", n);
+//  for(int i = 0; i < n; i++)
+//   printf("(%f, %f)\n", points[i][0], points[i][1]);
+// printf("\n\n");
 
  int N_left, N_right;
  int median_index = (int) (n/2);
+
  N_left = median_index; // #points before median
  N_right = n % 2 == 0 ? median_index - 1 : median_index; // points after median 
 
@@ -126,9 +127,18 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
+ #pragma omp parallel
+ {
+ //#pragma omp master
+ //printf("\n%d", omp_get_num_threads());
+ #pragma omp single
+ {
+ #pragma omp task
  node -> left  = build_kdtree(left_points, N_left, ndim, my_axis);
+ #pragma omp task
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
- 
+ }
+ }
  return node;
 }
 
