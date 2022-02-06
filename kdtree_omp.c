@@ -11,7 +11,6 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-#define N 10000000
 
 //-------------------- Data Structures --------------------------------------------------------
 
@@ -31,7 +30,7 @@ int choose_splitting_dimension(int axis, int ndim);
 
 kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
-kpoint * initialize();
+kpoint * initialize(int n);
 
 void my_qsort(kpoint * points, int n, int el_len, int axis);
 
@@ -45,7 +44,12 @@ void print_tree(knode * tree);
 
 int main(int argc, char* argv[]){
 
- kpoint * points = initialize();
+ int N = 100000;
+
+ if(argc == 2)
+  sscanf(argv[1], "%d", &N);
+
+ kpoint * points = initialize(N);
  
  //for(int i = 0; i < N; i++)
  // printf("(%f, %f)\n", points[i][0], points[i][1]);
@@ -63,9 +67,9 @@ int main(int argc, char* argv[]){
 
 // initialize() ----------------------------------------------------------------
 
-kpoint * initialize(){
+kpoint * initialize(int n){
  
- kpoint * points = (kpoint *) malloc(N * sizeof(kpoint));
+ kpoint * points = (kpoint *) malloc(n * sizeof(kpoint));
 
  if(points == NULL){
   printf("Problem with malloc()");
@@ -74,7 +78,7 @@ kpoint * initialize(){
 
  srand48((int) getpid());
 
- for(int i = 0; i < N; i++){
+ for(int i = 0; i < n; i++){
   points[i][0] = drand48();
   points[i][1] = drand48();
  }
@@ -129,8 +133,8 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
 
  #pragma omp parallel
  {
- //#pragma omp master
- //printf("\n%d", omp_get_num_threads());
+// #pragma omp master
+// printf("\n%d", omp_get_num_threads());
  #pragma omp single
  {
  #pragma omp task
