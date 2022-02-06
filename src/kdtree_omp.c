@@ -51,12 +51,13 @@ int main(int argc, char* argv[]){
 
  kpoint * points = initialize(N);
  
- //for(int i = 0; i < N; i++)
- // printf("(%f, %f)\n", points[i][0], points[i][1]);
- //printf("\n\n\n");
  double start = omp_get_wtime();
- knode * kd_tree = build_kdtree(points, N, NDIM, -1);
- //printf("%f,%f\n", kd_tree->split[0], kd_tree->split[1]);
+ 
+ knode * kd_tree;
+ #pragma omp parallel
+ #pragma omp master
+ kd_tree = build_kdtree(points, N, NDIM, -1);
+ 
  //print_tree(kd_tree);
  printf("time: %f\n", omp_get_wtime() - start);
 
@@ -131,18 +132,13 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
- #pragma omp parallel
- {
-// #pragma omp master
-// printf("\n%d", omp_get_num_threads());
- #pragma omp single
- {
+ printf("\n%d\n", omp_get_num_threads());
+
  #pragma omp task
  node -> left  = build_kdtree(left_points, N_left, ndim, my_axis);
  #pragma omp task
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
- }
- }
+
  return node;
 }
 
