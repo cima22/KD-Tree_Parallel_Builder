@@ -132,7 +132,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
- printf("\n%d\n", omp_get_num_threads());
+// printf("\n%d\n", omp_get_num_threads());
 
  #pragma omp task
  node -> left  = build_kdtree(left_points, N_left, ndim, my_axis);
