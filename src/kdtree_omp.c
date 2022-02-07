@@ -46,20 +46,26 @@ void print_tree(knode * tree);
 
 int main(int argc, char* argv[]){
 
- int N = 100000;
+ int N = 100000000;
+ int threads = 1;
+ double start, end; 
 
  if(argc == 2)
   sscanf(argv[1], "%d", &N);
 
  kpoint * points = initialize(N);
 
- double start = omp_get_wtime();
- 
+ start = omp_get_wtime();
  knode * kd_tree = build_kdtree(points, N, NDIM);
- 
+ end = omp_get_wtime() - start;
  //print_tree(kd_tree);
- printf("time: %f\n", omp_get_wtime() - start);
-
+ 
+ #pragma omp parallel
+ #pragma omp master
+ threads = omp_get_num_threads();
+ 
+ printf("%f,%d,%d\n", end, N, threads);
+ 
  return 0;
 }
 
