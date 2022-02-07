@@ -103,7 +103,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim){
 }
 
 knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
- 
+
  if(n == 0){ return NULL;}
 
  if(n == 1){
@@ -116,6 +116,9 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
   return leaf;
  }
 
+ kpoint * temp = malloc(n * sizeof(kpoint));
+ memcpy(temp, points, n * sizeof(kpoint));
+
  knode * node = (knode *) malloc(sizeof(knode));
   if(node == NULL){
   printf("Problem with malloc()");
@@ -124,7 +127,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
  int my_axis = choose_splitting_dimension(axis, ndim);
 
- kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
+ kpoint * my_point = choose_splitting_point(temp, n, ndim, my_axis);
 
 //  printf("\n\n%d\n", n);
 //  for(int i = 0; i < n; i++)
@@ -138,8 +141,8 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  N_right = n % 2 == 0 ? median_index - 1 : median_index; // points after median 
 
  kpoint * left_points, * right_points;
- left_points  = (kpoint *) points;
- right_points = (kpoint *) (points) + N_left + 1;
+ left_points  = (kpoint *) temp;
+ right_points = (kpoint *) (temp) + N_left + 1;
 
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
@@ -150,6 +153,8 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  node -> left  = build_kdtree_ric(left_points, N_left, ndim, my_axis);
  #pragma omp task
  node -> right = build_kdtree_ric(right_points, N_right, ndim, my_axis);
+
+ free(temp);
 
 //#pragma omp taskwait
  return node;
