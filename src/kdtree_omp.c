@@ -116,7 +116,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
   return leaf;
  }
 
- kpoint * temp = malloc(n * sizeof(kpoint));
+ kpoint * temp = (kpoint *) malloc(n * sizeof(kpoint));
  memcpy(temp, points, n * sizeof(kpoint));
 
  knode * node = (knode *) malloc(sizeof(knode));
@@ -154,7 +154,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  #pragma omp task
  node -> right = build_kdtree_ric(right_points, N_right, ndim, my_axis);
 
- free(temp);
+ //free(temp);
 
 //#pragma omp taskwait
  return node;
