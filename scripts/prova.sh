@@ -13,6 +13,3 @@ echo "nested,timing" > times/omp.csv
 cd src
 gcc -fopenmp -std=gnu99 -o kdtree_omp kdtree_omp.c
 ./kdtree_omp 100000000 >> ../times/omp.csv
-export OMP_NESTED=FALSE
-./kdtree_omp 100000000 >> ../times/omp.csv
-
