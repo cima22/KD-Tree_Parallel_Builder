@@ -24,7 +24,9 @@ typedef struct knode{
 
 //--------------------- Functions Declaration -------------------------------------------------
 
-knode * build_kdtree(kpoint * points, int n, int ndim, int axis);
+knode * build_kdtree(kpoint * points, int n, int ndim);
+
+knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis);
 
 int choose_splitting_dimension(int axis, int ndim);
 
@@ -50,13 +52,10 @@ int main(int argc, char* argv[]){
   sscanf(argv[1], "%d", &N);
 
  kpoint * points = initialize(N);
- 
+
  double start = omp_get_wtime();
  
- knode * kd_tree;
- #pragma omp parallel
- #pragma omp master
- kd_tree = build_kdtree(points, N, NDIM, -1);
+ knode * kd_tree = build_kdtree(points, N, NDIM);
  
  //print_tree(kd_tree);
  printf("time: %f\n", omp_get_wtime() - start);
@@ -89,10 +88,17 @@ kpoint * initialize(int n){
 
 // build_kdtree() -------------------------------------------------------------
 
-knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
+knode * build_kdtree(kpoint * points, int n, int ndim){
+ knode * tree;
+ #pragma omp parallel
+ #pragma omp master
+ tree = build_kdtree_ric(points, n, ndim, -1);
+ return tree;
+}
+
+knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  
  if(n == 0){ return NULL;}
-
 
  if(n == 1){
   knode * leaf = (knode *) malloc(sizeof(knode));
@@ -114,10 +120,10 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
 
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
-// printf("\n\n%d\n", n);
+//  printf("\n\n%d\n", n);
 //  for(int i = 0; i < n; i++)
 //   printf("(%f, %f)\n", points[i][0], points[i][1]);
-// printf("\n\n");
+//  printf("\n\n");
 
  int N_left, N_right;
  int median_index = (int) (n/2);
@@ -135,9 +141,9 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
 // printf("\n%d\n", omp_get_num_threads());
 
  #pragma omp task
- node -> left  = build_kdtree(left_points, N_left, ndim, my_axis);
+ node -> left  = build_kdtree_ric(left_points, N_left, ndim, my_axis);
  #pragma omp task
- node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
+ node -> right = build_kdtree_ric(right_points, N_right, ndim, my_axis);
 
 //#pragma omp taskwait
  return node;
