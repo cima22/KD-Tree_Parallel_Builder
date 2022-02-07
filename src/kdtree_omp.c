@@ -139,7 +139,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
  #pragma omp task
  node -> right = build_kdtree(right_points, N_right, ndim, my_axis);
 
-#pragma omp taskwait
+//#pragma omp taskwait
  return node;
 }
 
