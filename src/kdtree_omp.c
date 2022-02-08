@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
  #pragma omp master
  threads = omp_get_num_threads();
  
- printf("%f,%d,%d\n", end, N, threads);
+ printf("%.4f,%d,%d\n", end, N, threads);
  
  free(points);
 
