@@ -97,6 +97,58 @@ kpoint * initialize(int n){
 
 // build_kdtree() ---------------------------------------------------------------------------
 
-knode * build_kdtree(kpoint * points, int n, int ndim, int axis){
+knode * build_kdtree(kpoint * points, int n, int ndim){
+ if(n == 0) return NULL;
+
+ if(n == 1){
+  knode * leaf = (knode *) malloc(sizeof(knode));
+  leaf -> axis  = 0;
+  memcpy(leaf->split, points, sizeof(kpoint*));
+  leaf -> left = NULL;
+  leaf -> right = NULL;
+  #ifdef DEBUG
+   printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
+  #endif
+  return leaf;
+ }
  
+ knode * node = (knode *) malloc(sizeof(knode));
+ if(node == NULL){
+  printf("Problem with malloc()");
+  return NULL;
+ }
+
+ int my_axis = choose_splitting_dimension(axis, ndim);
+
+ kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
+
+ #ifdef DEBUG
+  for(int i = 0; i < n; i++)
+   printf("(%f, %f)\n", points[i][0], points[i][1]);
+  printf("\n\n");
+ #endif
+
+ int N_left, N_right;
+ int median_index = (int) (n/2);
+
+ N_left = median_index;
+ N_right = n % 2 == 0 ? median_index - 1 : median_index;
+
+ kpoint * left_points, right_points;
+ left_points = (kpoint *) points;
+ right_points = (kpoint *) (points) + N_left + 1;
+
+ node -> axis = my_axis;
+ memcpy(node -> split, my_point, sizeof(kpoint *));
+
+ if(size != 1){
+  MPI_Send(right_points, N_right * 2, MPI_FLOAT, 1, 0, MPI_COMM_WORLD);
+ }
+ 
+}
+
+ //free(temp);
+ //
+
+return node;
 }
