@@ -13,6 +13,11 @@ int comp_x(const void * el1, const void * el2){
  
 }
 
+void provetta(int n){
+
+printf("pointer inside fun: %p - value 10: %d\n", &n, n);
+}
+
 int main(){
 
  kpoint * points = (kpoint *) malloc(N * sizeof(kpoint));
@@ -23,11 +28,17 @@ int main(){
   points[i][0] = drand48();
   points[i][1] = drand48();
  }
-float * nums = (float *) points;
-for(int i = 0; i < N * 2; i++)
- printf("%d - %f\n", i, nums[i]);
+
+int n = 10;
+printf("pointer outside fun: %p - value 10: %d\n", &n, n);
+printf("\n\n%d\n\n", time(NULL));
+provetta(n);
 
 /*
+ float * nums = (float *) points;
+ for(int i = 0; i < N * 2; i++)
+  printf("%d - %f\n", i, nums[i]);
+
 
  for(int i = 0; i < N; i++){
   printf("%d - (%f, %f)\n", i, points[i][0], points[i][1]);

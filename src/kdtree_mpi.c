@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include "mpi.h"
 
 #ifndef DOUBLE_PRECISION
@@ -22,14 +23,18 @@ typedef struct knode{
 	struct knode *left, *right;
 } knode;
 
+int size, rank;
+
 //------------- Function Declaration ---------------------------------------------------------
 
 
-knode * build_kdtree(kpoint * points, int n, int ndim, int axis);
+knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth);
+
+knode * start_build();
 
 int choose_splitting_dimension(int axis, int ndim);
 
-kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis);
+kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
 kpoint * initialize(int n);
 
@@ -45,27 +50,32 @@ void print_tree(knode * tree);
 
 int main(int argc, char* argv[]){
  
- MPI_Init(%argc, &argv);
+ MPI_Init(&argc, &argv);
 
  double start, end;
  int N = argc >= 2 ? atoi(argv[1]) : 100000000;
 
  kpoint * points;
 
- int rank, size;
  MPI_Comm_size(MPI_COMM_WORLD, &size);
- MPI_Comm_rank(MPI_COMM_WORLD, &rank;
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+ knode * kd_tree;
 
  if(rank == 0){ 
   points = initialize(N);
 
   start = MPI_Wtime();
-  knode * kd_tree = build_kdtree(points, N, NDIM, -1);
+  kd_tree = build_kdtree(points, N, NDIM, -1, 0);
   end = MPI_Wtime() - start;
 
   printf("%.5f,%d,%d\n", end, N, size);
 
   free(points);
+ }
+
+ else {
+  kd_tree = start_build();
  }
 
  return 0;
@@ -97,7 +107,7 @@ kpoint * initialize(int n){
 
 // build_kdtree() ---------------------------------------------------------------------------
 
-knode * build_kdtree(kpoint * points, int n, int ndim){
+knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  if(n == 0) return NULL;
 
  if(n == 1){
@@ -134,21 +144,98 @@ knode * build_kdtree(kpoint * points, int n, int ndim){
  N_left = median_index;
  N_right = n % 2 == 0 ? median_index - 1 : median_index;
 
- kpoint * left_points, right_points;
+ kpoint * left_points, * right_points;
  left_points = (kpoint *) points;
  right_points = (kpoint *) (points) + N_left + 1;
 
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
- if(size != 1){
-  MPI_Send(right_points, N_right * 2, MPI_FLOAT, 1, 0, MPI_COMM_WORLD);
+//sending right branch and the other paramteres to the right process
+ if(size != 1 && (depth < log2(size))){
+  int dest_rank = rank + (size / pow(2,depth + 1));
+  int params[] = {N_right, ndim, my_axis, depth};
+  MPI_Send(params, 4, MPI_INT, dest_rank, rank * 100, MPI_COMM_WORLD); // # params
+  MPI_Send((float_t *) right_points, N_right * 2, MPI_FLOAT, dest_rank, rank * 100, MPI_COMM_WORLD); // points as coordinates
+
+  node -> left = build_kdtree(left_points, N_left, ndim, my_axis, depth + 1); //left branch continues on same process
  }
  
-}
+ // if there are no left processes, the processes continues indipentendly
+ else if(depth >= log2(size)){
+  right_points = (kpoint *) right_points;
+  node -> left = build_kdtree(left_points, N_left, ndim, my_axis, log2(size));
+  node -> right = build_kdtree(right_points, N_right, ndim, my_axis, log2(size));
+ }
 
  //free(temp);
- //
 
 return node;
+}
+
+// start_build() -----------------------------------------------------------------------------------
+
+knode * start_build(){
+ int params[4];
+ MPI_Status * status;
+ float * coords;
+ kpoint * points;
+
+ MPI_Recv(params, 4, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, status); // Receive number of points
+ coords = malloc(params[0] * 2 * sizeof(float));
+ points = malloc(params[0] * sizeof(kpoint));
+ MPI_Recv(coords, params[0] * 2, MPI_FLOAT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, status); // Receive coordinates
+
+ // Initialize the points
+ for(int i = 0; i < params[0]; i++){
+  points[i][0] = coords[2*i];
+  points[i][1] = coords[2*i + 1];
+ }
+ free(coords);
+
+ knode * sub_tree = build_kdtree(points, params[0], params[1], params[2], params[3]);
+ return sub_tree;
+}
+
+// choose_splitting_dimension() ------------------------------------------------------------------------------
+int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
+
+// choose_splitting_point() ---------------------------------------------------------------------------------
+kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
+ my_qsort(points, n, sizeof(kpoint), axis);
+ kpoint * median = (kpoint*) points[(int) (n/2)]; // median of the sorted points
+ return median;
+}
+
+// my_qsort() ---------------------------------------------------------------------------
+
+void my_qsort(kpoint * points, int n, int el_len, int axis){
+ if(axis == 0)
+  qsort(points, n, el_len, comp_x);
+ else if (axis == 1)
+  qsort(points, n, el_len, comp_y);
+ }
+
+int comp_x(const void * el1, const void * el2){
+ float_t val1 = (*((kpoint *) el1))[0];
+ float_t val2 = (*((kpoint *) el2))[0];
+ return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
+}
+
+int comp_y(const void * el1, const void * el2){
+ float_t val1 = (*((kpoint *) el1))[1];
+ float_t val2 = (*((kpoint *) el2))[1];
+ return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
+}
+
+void print_tree(knode * tree){
+ printf("\n(%f, %f) - Axis = %d", tree->split[0], tree->split[1], tree->axis);
+ if(tree->left != NULL){
+  printf("\nLeft Branch:");
+  print_tree(tree->left);
+ }
+ if(tree->right != NULL){
+  printf("\nRight branch:");
+  print_tree(tree->right);
+ }
 }
