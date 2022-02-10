@@ -11,6 +11,7 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
+//#define DEBUG 0
 
 //------------- Data Structures --------------------------------------------------------------
 
@@ -70,7 +71,7 @@ int main(int argc, char* argv[]){
   end = MPI_Wtime() - start;
 
   printf("%.5f,%d,%d\n", end, N, size);
-
+  MPI_Barrier(MPI_COMM_WORLD);
   free(points);
  }
 
@@ -117,7 +118,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
   leaf -> left = NULL;
   leaf -> right = NULL;
   #ifdef DEBUG
-   printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
+   printf("\nrank:%d\n\n(%f, %f)\n\n", rank, points[0][0], points[0][1]);
   #endif
   return leaf;
  }
@@ -133,6 +134,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
  #ifdef DEBUG
+  printf("\n%d:\n", rank);
   for(int i = 0; i < n; i++)
    printf("(%f, %f)\n", points[i][0], points[i][1]);
   printf("\n\n");
@@ -154,7 +156,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
 //sending right branch and the other paramteres to the right process
  if(size != 1 && (depth < log2(size))){
   int dest_rank = rank + (size / pow(2,depth + 1));
-  int params[] = {N_right, ndim, my_axis, depth};
+  int params[] = {N_right, ndim, my_axis, depth + 1};
   MPI_Send(params, 4, MPI_INT, dest_rank, rank * 100, MPI_COMM_WORLD); // # params
   MPI_Send((float_t *) right_points, N_right * 2, MPI_FLOAT, dest_rank, rank * 100, MPI_COMM_WORLD); // points as coordinates
 
@@ -194,6 +196,7 @@ knode * start_build(){
  free(coords);
 
  knode * sub_tree = build_kdtree(points, params[0], params[1], params[2], params[3]);
+ //print_tree(sub_tree);
  return sub_tree;
 }
 
