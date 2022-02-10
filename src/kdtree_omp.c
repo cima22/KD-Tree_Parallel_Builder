@@ -11,7 +11,7 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-
+//#define DEBUG 0
 //-------------------- Data Structures --------------------------------------------------------
 
 typedef float_t kpoint[NDIM];
@@ -55,8 +55,11 @@ int main(int argc, char* argv[]){
  start = omp_get_wtime();
  knode * kd_tree = build_kdtree(points, N, NDIM);
  end = omp_get_wtime() - start;
- //print_tree(kd_tree);
  
+#ifdef DEBUG
+ print_tree(kd_tree);
+#endif
+
  #pragma omp parallel
  #pragma omp master
  threads = omp_get_num_threads();
