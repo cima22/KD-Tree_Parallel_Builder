@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <unistd.h>
+#include <time.h>
 #include "mpi.h"
 
 #ifndef DOUBLE_PRECISION
@@ -24,6 +24,16 @@ typedef struct knode{
 	struct knode *left, *right;
 } knode;
 
+typedef struct array {
+	int dim;
+	float_t * start;
+} array;
+
+typedef struct des {
+	knode * tree;
+	int index;
+} des;
+
 int size, rank;
 
 //------------- Function Declaration ---------------------------------------------------------
@@ -38,6 +48,10 @@ int choose_splitting_dimension(int axis, int ndim);
 kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
 kpoint * initialize(int n);
+
+array serialize(knode * tree, float_t * sequence, int dim);
+
+knode * deserialize(float_t * ser);
 
 void my_qsort(kpoint * points, int n, int el_len, int axis);
 
@@ -69,16 +83,27 @@ int main(int argc, char* argv[]){
   start = MPI_Wtime();
   kd_tree = build_kdtree(points, N, NDIM, -1, 0);
   end = MPI_Wtime() - start;
-
   printf("%.5f,%d,%d\n", end, N, size);
+  
   MPI_Barrier(MPI_COMM_WORLD);
+  
   free(points);
  }
 
  else {
   kd_tree = start_build();
+  MPI_Barrier(MPI_COMM_WORLD);
+  if(rank == 2){
+  print_tree(kd_tree);
+  array ser = {0, malloc(sizeof(float_t))};
+  ser = serialize(kd_tree, ser.start, ser.dim);
+printf("\n ------ \n");
+for(int i = 0; i < ser.dim; i++)
+	printf("%f, ", ser.start[i]);
+  printf("\n------\n");
+  }
  }
-
+MPI_Barrier(MPI_COMM_WORLD);
  return 0;
 }
 
@@ -96,7 +121,7 @@ kpoint * initialize(int n){
   return NULL;
  }
 
- srand((int) getpid());
+ srand(time(NULL));
 
  for(int i = 0; i < n; i++){
   points[i][0] = drand48();
@@ -161,6 +186,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
   MPI_Send((float_t *) right_points, N_right * 2, MPI_FLOAT, dest_rank, rank * 100, MPI_COMM_WORLD); // points as coordinates
 
   node -> left = build_kdtree(left_points, N_left, ndim, my_axis, depth + 1); //left branch continues on same process
+  node -> right = NULL;
  }
  
  // if there are no left processes, the processes continues indipentendly
@@ -230,6 +256,52 @@ int comp_y(const void * el1, const void * el2){
  float_t val2 = (*((kpoint *) el2))[1];
  return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
 }
+
+// serialize() ------------------------------------------------------------------------------------
+
+array serialize(knode * tree, float_t * sequence, int dim){
+ if(tree == NULL){
+  sequence = (float_t *) realloc(sequence, (dim + 1) * sizeof(float_t));
+  sequence[dim] = -1;
+  array ser = {dim + 1, sequence};
+  return ser;
+ }
+ else{
+  sequence = (float_t *) realloc(sequence, (dim + 3) * sizeof(float_t));
+  sequence[dim] = tree -> axis;
+  sequence[dim + 1] = tree -> split[0];
+  sequence[dim + 2] = tree -> split[1];
+  array ser = serialize(tree -> left, sequence, dim + 3);
+  ser = serialize(tree -> right, ser.start, ser.dim);
+  return ser;
+ }
+}
+
+// deserialize () --------------------------------------------------------------------------------
+
+des deserialize_ric(float_t ser, int index){
+ if(ser == NULL)
+  return NULL;
+ if(ser[0] == -1)
+  return NULL;
+
+ knode * node = (knode *) malloc(sizeof(knode));
+ kpoint * sp = (kpoint *) malloc(sizeof(kpoint));
+ (*sp)[0] = ser[1];
+ (*sp)[1] = ser[2];
+ node -> split = *sp;
+ node -> axis = ser[0];
+ node -> left = deserialize(ser + 3);
+ node -> right = deserialize();
+ 
+}
+
+knode * deserialize(float_t ser){
+ des = 
+
+}
+
+// print_tree() ------------------------------------------------------------------------------------
 
 void print_tree(knode * tree){
  printf("\n(%f, %f) - Axis = %d", tree->split[0], tree->split[1], tree->axis);

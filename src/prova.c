@@ -5,17 +5,39 @@
 
 typedef float kpoint[2];
 
+typedef struct knode{
+ int axis;
+ kpoint split;
+ struct knode *left, *right;
+}
+
 int comp_x(const void * el1, const void * el2){
 
  float val1 = *((kpoint *) el1)[0];
  float val2 = *((kpoint *) el2)[0];
  return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
- 
 }
 
 void provetta(int n){
 
 printf("pointer inside fun: %p - value 10: %d\n", &n, n);
+}
+
+int serialize(kpoint * tree, float_t * sequence, int dim){
+if(tree == NULL){
+ sequence = (float_t *) realloc(sequence, dim + 1);
+ sequence[dim] = -1;
+ return dim + 1;
+ } 
+else {
+  sequence = (float_t *) realloc(sequence, dim + 3);
+  sequence[dim] = tree -> axis;
+  sequence[dim + 1] = tree -> split[0];
+  sequence[dim + 2] = tree -> split[1];
+  int left = serialize(tree -> left, sequence, dim + 3);
+  int right = serialize(tree -> right, sequence, left);
+  return right;
+ }
 }
 
 int main(){
