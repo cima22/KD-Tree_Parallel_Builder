@@ -87,23 +87,25 @@ int main(int argc, char* argv[]){
   
   MPI_Barrier(MPI_COMM_WORLD);
   
+  float_t * ser = malloc(sizeof(float_t));
+  array s = serialize(kd_tree, ser,0);
+  for(int i = 0; i < s.dim; i++)
+	  printf("%f, ", s.start[i]);
+
+  knode * deserialized = deserialize(s.start);
+
+  printf("\nDESERIALIZED:\n");
+  print_tree(deserialized);
+
   free(points);
  }
 
  else {
   kd_tree = start_build();
   MPI_Barrier(MPI_COMM_WORLD);
-  if(rank == 2){
-  print_tree(kd_tree);
-  array ser = {0, malloc(sizeof(float_t))};
-  ser = serialize(kd_tree, ser.start, ser.dim);
-printf("\n ------ \n");
-for(int i = 0; i < ser.dim; i++)
-	printf("%f, ", ser.start[i]);
-  printf("\n------\n");
-  }
  }
-MPI_Barrier(MPI_COMM_WORLD);
+
+ MPI_Barrier(MPI_COMM_WORLD);
  return 0;
 }
 
@@ -279,26 +281,28 @@ array serialize(knode * tree, float_t * sequence, int dim){
 
 // deserialize () --------------------------------------------------------------------------------
 
-des deserialize_ric(float_t ser, int index){
+des deserialize_ric(float_t * ser, int index){
  if(ser == NULL)
-  return NULL;
- if(ser[0] == -1)
-  return NULL;
+  return (des) {NULL, index};
+ if(ser[index] == -1)
+  return (des) {NULL, index + 1};
 
  knode * node = (knode *) malloc(sizeof(knode));
  kpoint * sp = (kpoint *) malloc(sizeof(kpoint));
- (*sp)[0] = ser[1];
- (*sp)[1] = ser[2];
- node -> split = *sp;
- node -> axis = ser[0];
- node -> left = deserialize(ser + 3);
- node -> right = deserialize();
- 
+ node -> axis = ser[index];
+ (*sp)[0] = ser[index + 1];
+ (*sp)[1] = ser[index + 2];
+ memcpy(node -> split, *sp, sizeof(kpoint *));
+ des temp = deserialize_ric(ser, index + 3);
+ node -> left = temp.tree;
+ temp = deserialize_ric(ser, temp.index);
+ node -> right = temp.tree;
+ return (des) {node, temp.index}; 
 }
 
-knode * deserialize(float_t ser){
- des = 
-
+knode * deserialize(float_t * ser){
+ des t = deserialize_ric(ser, 0);
+ return t.tree;
 }
 
 // print_tree() ------------------------------------------------------------------------------------

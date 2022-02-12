@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #define N 9
 
 typedef float kpoint[2];
@@ -9,7 +10,7 @@ typedef struct knode{
  int axis;
  kpoint split;
  struct knode *left, *right;
-}
+} knode;
 
 int comp_x(const void * el1, const void * el2){
 
@@ -23,21 +24,8 @@ void provetta(int n){
 printf("pointer inside fun: %p - value 10: %d\n", &n, n);
 }
 
-int serialize(kpoint * tree, float_t * sequence, int dim){
-if(tree == NULL){
- sequence = (float_t *) realloc(sequence, dim + 1);
- sequence[dim] = -1;
- return dim + 1;
- } 
-else {
-  sequence = (float_t *) realloc(sequence, dim + 3);
-  sequence[dim] = tree -> axis;
-  sequence[dim + 1] = tree -> split[0];
-  sequence[dim + 2] = tree -> split[1];
-  int left = serialize(tree -> left, sequence, dim + 3);
-  int right = serialize(tree -> right, sequence, left);
-  return right;
- }
+knode provettona(){
+return (knode) {0, {0,0}, NULL, NULL};
 }
 
 int main(){
@@ -53,8 +41,12 @@ int main(){
 
 int n = 10;
 printf("pointer outside fun: %p - value 10: %d\n", &n, n);
-printf("\n\n%d\n\n", time(NULL));
+printf("\n\n%ld\n\n", time(NULL));
 provetta(n);
+
+knode k = provettona();
+
+printf("\n%p\n", k.left);
 
 /*
  float * nums = (float *) points;
