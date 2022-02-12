@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include "test.h"
 #define N 9
 
 typedef float kpoint[2];
@@ -47,6 +48,8 @@ provetta(n);
 knode k = provettona();
 
 printf("\n%p\n", k.left);
+
+printf("\nlibrary test: %d", testaccio(2));
 
 /*
  float * nums = (float *) points;
