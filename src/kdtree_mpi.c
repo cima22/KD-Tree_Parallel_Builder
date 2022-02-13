@@ -36,6 +36,8 @@ typedef struct des {
 
 int size, rank;
 
+knode * kd_tree;
+
 //------------- Function Declaration ---------------------------------------------------------
 
 
@@ -49,6 +51,8 @@ kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
 kpoint * initialize(int n);
 
+void glue_trees(knode * tree);
+
 array serialize(knode * tree, float_t * sequence, int dim);
 
 knode * deserialize(float_t * ser);
@@ -60,6 +64,8 @@ int comp_x(const void * el1, const void * el2);
 int comp_y(const void * el1, const void * el2);
 
 void print_tree(knode * tree);
+
+int find_depth(knode * tree);
 
 //---------------- Main -----------------------------------------------------------------------
 
@@ -75,8 +81,6 @@ int main(int argc, char* argv[]){
  MPI_Comm_size(MPI_COMM_WORLD, &size);
  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
- knode * kd_tree;
-
  if(rank == 0){ 
   points = initialize(N);
 
@@ -85,27 +89,18 @@ int main(int argc, char* argv[]){
   end = MPI_Wtime() - start;
   printf("%.5f,%d,%d\n", end, N, size);
   
-  MPI_Barrier(MPI_COMM_WORLD);
-  
-  float_t * ser = malloc(sizeof(float_t));
-  array s = serialize(kd_tree, ser,0);
-  for(int i = 0; i < s.dim; i++)
-	  printf("%f, ", s.start[i]);
-
-  knode * deserialized = deserialize(s.start);
-
-  printf("\nDESERIALIZED:\n");
-  print_tree(deserialized);
-
-  free(points);
+  //free(points);
  }
 
  else {
   kd_tree = start_build();
-  MPI_Barrier(MPI_COMM_WORLD);
- }
+  }
 
  MPI_Barrier(MPI_COMM_WORLD);
+ glue_trees(kd_tree);
+ if(rank == 0){
+  print_tree(kd_tree);
+ }
  return 0;
 }
 
@@ -188,7 +183,12 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
   MPI_Send((float_t *) right_points, N_right * 2, MPI_FLOAT, dest_rank, rank * 100, MPI_COMM_WORLD); // points as coordinates
 
   node -> left = build_kdtree(left_points, N_left, ndim, my_axis, depth + 1); //left branch continues on same process
-  node -> right = NULL;
+  
+  knode * missing = malloc(sizeof(knode));
+  missing -> axis = -1;
+  missing -> left = NULL;
+  missing -> right = NULL;
+  node -> right = missing;
  }
  
  // if there are no left processes, the processes continues indipentendly
@@ -303,6 +303,58 @@ des deserialize_ric(float_t * ser, int index){
 knode * deserialize(float_t * ser){
  des t = deserialize_ric(ser, 0);
  return t.tree;
+}
+
+// glue_trees() -------------------------------------------------------------------------------------
+
+int find_depth(knode * tree){
+ if(tree == NULL || tree->right == NULL)
+  return 0;
+ if(tree->right->axis == -1)
+  return 1 + find_depth(tree->left);
+ return 0;
+}
+
+void set_right_child(knode * tree, knode * sub_tree, int depth){
+ knode * n = tree;
+ for(int k = 0; k < depth; k++)
+  n = n -> left;
+ n -> right = sub_tree;
+ }
+
+void glue_trees(knode * tree){
+ int d = find_depth(tree);
+ for(int i = 0; i <= d; i++){
+  #ifdef DEBUG
+   printf("\n%d - %d - %d\n", rank, i, d);
+  #endif
+  if(d - i > 0){
+   int recv_rank = rank + pow(2, i);
+   int len;
+   MPI_Status * status;
+   MPI_Recv(&len, 1, MPI_INT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+   printf("\nrank: %d - recv: %d - len: %d\n", rank, recv_rank, len);
+   float_t * buf = (float_t *) malloc(len * sizeof(float_t));
+   MPI_Recv(buf, len, MPI_FLOAT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+   knode * sub_tree = deserialize(buf);
+   set_right_child(tree, sub_tree, d - i - 1);
+  }
+
+  if(d == i && d != log2(size)){
+   int send_rank = rank - pow(2, i);
+   array s = serialize(tree, malloc(sizeof(float_t)), 0);
+   #ifdef DEBUG
+   printf("\nI am rank %d and i will send to %d this data: ", rank, send_rank);
+   for(int j = 0; j < s.dim; j++)
+	   printf("%f, ", s.start[j]);
+   #endif
+   printf("prima\n");
+   MPI_Ssend(&(s.dim), 1, MPI_INT, send_rank, rank * 100, MPI_COMM_WORLD);
+   printf("In mezzp\n");
+   MPI_Ssend(s.start, s.dim, MPI_FLOAT, send_rank, rank * 100, MPI_COMM_WORLD);
+   printf("Dopo\n");
+  }
+ }
 }
 
 // print_tree() ------------------------------------------------------------------------------------
