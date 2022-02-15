@@ -339,8 +339,8 @@ void glue_trees(knode * tree){
    int len;
    MPI_Status * status;
   // MPI_Recv(&len, 1, MPI_INT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-   printf("\n%d\n", status -> MPI_ERROR);
-   printf("\nrank: %d - recv: %d - len: %d\n", rank, recv_rank, len);
+  // printf("\n%d\n", status -> MPI_ERROR);
+  // printf("\nrank: %d - recv: %d - len: %d\n", rank, recv_rank, len);
    float_t * buf = (float_t *) malloc(3 * sizeof(float_t));
    MPI_Recv(buf, 3, MPI_FLOAT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
   // knode * sub_tree = deserialize(buf);
