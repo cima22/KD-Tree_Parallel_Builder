@@ -98,9 +98,15 @@ int main(int argc, char* argv[]){
 
  MPI_Barrier(MPI_COMM_WORLD);
  glue_trees(kd_tree);
+
+ MPI_Barrier(MPI_COMM_WORLD);
  if(rank == 0){
-  print_tree(kd_tree);
+ // print_tree(kd_tree);
+ printf("\nFinito\n");
  }
+ MPI_Barrier(MPI_COMM_WORLD);
+ printf("%d the last barrier\n", rank);
+ MPI_Finalize();
  return 0;
 }
 
@@ -332,12 +338,13 @@ void glue_trees(knode * tree){
    int recv_rank = rank + pow(2, i);
    int len;
    MPI_Status * status;
-   MPI_Recv(&len, 1, MPI_INT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+  // MPI_Recv(&len, 1, MPI_INT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+   printf("\n%d\n", status -> MPI_ERROR);
    printf("\nrank: %d - recv: %d - len: %d\n", rank, recv_rank, len);
-   float_t * buf = (float_t *) malloc(len * sizeof(float_t));
-   MPI_Recv(buf, len, MPI_FLOAT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
-   knode * sub_tree = deserialize(buf);
-   set_right_child(tree, sub_tree, d - i - 1);
+   float_t * buf = (float_t *) malloc(3 * sizeof(float_t));
+   MPI_Recv(buf, 3, MPI_FLOAT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+  // knode * sub_tree = deserialize(buf);
+  // set_right_child(tree, sub_tree, d - i - 1);
   }
 
   if(d == i && d != log2(size)){
@@ -349,9 +356,8 @@ void glue_trees(knode * tree){
 	   printf("%f, ", s.start[j]);
    #endif
    printf("prima\n");
-   MPI_Ssend(&(s.dim), 1, MPI_INT, send_rank, rank * 100, MPI_COMM_WORLD);
-   printf("In mezzp\n");
-   MPI_Ssend(s.start, s.dim, MPI_FLOAT, send_rank, rank * 100, MPI_COMM_WORLD);
+  // MPI_Ssend(&(s.dim), 1, MPI_INT, send_rank, rank * 100, MPI_COMM_WORLD);
+   MPI_Ssend(s.start, 3, MPI_FLOAT, send_rank, rank * 100, MPI_COMM_WORLD);
    printf("Dopo\n");
   }
  }
