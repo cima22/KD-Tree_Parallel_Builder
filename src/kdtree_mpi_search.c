@@ -265,7 +265,91 @@ int comp_y(const void * el1, const void * el2){
  return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
 }
 
- && d != log2(size)){
+// serialize() ------------------------------------------------------------------------------------
+
+array serialize(knode * tree, float_t * sequence, int dim){
+ if(tree == NULL){
+  sequence = (float_t *) realloc(sequence, (dim + 1) * sizeof(float_t));
+  sequence[dim] = -1;
+  array ser = {dim + 1, sequence};
+  return ser;
+ }
+ else{
+  sequence = (float_t *) realloc(sequence, (dim + 3) * sizeof(float_t));
+  sequence[dim] = tree -> axis;
+  sequence[dim + 1] = tree -> split[0];
+  sequence[dim + 2] = tree -> split[1];
+  array ser = serialize(tree -> left, sequence, dim + 3);
+  ser = serialize(tree -> right, ser.start, ser.dim);
+  return ser;
+ }
+}
+
+// deserialize () --------------------------------------------------------------------------------
+
+des deserialize_ric(float_t * ser, int index){
+ if(ser == NULL)
+  return (des) {NULL, index};
+ if(ser[index] == -1)
+  return (des) {NULL, index + 1};
+
+ knode * node = (knode *) malloc(sizeof(knode));
+ kpoint * sp = (kpoint *) malloc(sizeof(kpoint));
+ node -> axis = ser[index];
+ (*sp)[0] = ser[index + 1];
+ (*sp)[1] = ser[index + 2];
+ memcpy(node -> split, *sp, sizeof(kpoint *));
+ des temp = deserialize_ric(ser, index + 3);
+ node -> left = temp.tree;
+ temp = deserialize_ric(ser, temp.index);
+ node -> right = temp.tree;
+ return (des) {node, temp.index}; 
+}
+
+knode * deserialize(float_t * ser){
+ des t = deserialize_ric(ser, 0);
+ return t.tree;
+}
+
+// glue_trees() -------------------------------------------------------------------------------------
+
+int find_depth(knode * tree){
+ if(tree == NULL || tree->right == NULL)
+  return 0;
+ if(tree->right->axis == -1)
+  return 1 + find_depth(tree->left);
+ return 0;
+}
+
+void set_right_child(knode * tree, knode * sub_tree, int depth){
+ knode * n = tree;
+ for(int k = 0; k < depth; k++)
+  n = n -> left;
+ n -> right = sub_tree;
+ }
+
+void glue_trees(knode * tree){
+ int d = find_depth(tree);
+ for(int i = 0; i <= d; i++){
+  #ifdef DEBUG
+   printf("\n%d - %d - %d\n", rank, i, d);
+  #endif
+  if(d - i > 0){
+   int recv_rank = rank + pow(2, i);
+   int len;
+   MPI_Status * status;
+   printf("\n&len = %p\n", &len);
+   MPI_Recv(&len, 1, MPI_INT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+   #ifdef DEBUG
+   printf("\nrank: %d - recv: %d - len: %d\n", rank, recv_rank, len);
+   #endif
+   float_t * buf = (float_t *) malloc(len * sizeof(float_t));
+   MPI_Recv(buf, len, MPI_FLOAT, recv_rank, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+   knode * sub_tree = deserialize(buf);
+   set_right_child(tree, sub_tree, d - i - 1);
+  }
+
+  if(d == i && d != log2(size)){
    int send_rank = rank - pow(2, i);
    array s = serialize(tree, malloc(sizeof(float_t)), 0);
    #ifdef DEBUG
