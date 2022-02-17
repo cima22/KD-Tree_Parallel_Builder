@@ -265,23 +265,7 @@ int comp_y(const void * el1, const void * el2){
  return val1 > val2 ? 1 : val1 < val2 ? -1 : 0;
 }
 
- && d != log2(size)){
-   int send_rank = rank - pow(2, i);
-   array s = serialize(tree, malloc(sizeof(float_t)), 0);
-   #ifdef DEBUG
-   printf("\nI am rank %d and i will send to %d this data: ", rank, send_rank);
-   for(int j = 0; j < s.dim; j++)
-	   printf("%f, ", s.start[j]);
-   #endif
-   printf("prima\n");
-   MPI_Ssend(&(s.dim), 1, MPI_INT, send_rank, rank * 100, MPI_COMM_WORLD);
-   MPI_Ssend(s.start, s.dim, MPI_FLOAT, send_rank, rank * 100, MPI_COMM_WORLD);
-   printf("Dopo\n");
-  }
- }
-}
-
-// print_tree() ------------------------------------------------------------------------------------
+//print_tree() ------------------------------------------------------------------------------------
 
 void print_tree(knode * tree){
  printf("\n(%f, %f) - Axis = %d", tree->split[0], tree->split[1], tree->axis);
