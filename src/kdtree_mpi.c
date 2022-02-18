@@ -24,16 +24,6 @@ typedef struct knode{
 	struct knode *left, *right;
 } knode;
 
-typedef struct array {
-	int dim;
-	float_t * start;
-} array;
-
-typedef struct des {
-	knode * tree;
-	int index;
-} des;
-
 int size, rank;
 
 knode * kd_tree;
@@ -51,12 +41,6 @@ kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis);
 
 kpoint * initialize(int n);
 
-void glue_trees(knode * tree);
-
-array serialize(knode * tree, float_t * sequence, int dim);
-
-knode * deserialize(float_t * ser);
-
 void my_qsort(kpoint * points, int n, int el_len, int axis);
 
 int comp_x(const void * el1, const void * el2);
@@ -64,8 +48,6 @@ int comp_x(const void * el1, const void * el2);
 int comp_y(const void * el1, const void * el2);
 
 void print_tree(knode * tree);
-
-int find_depth(knode * tree);
 
 //---------------- Main -----------------------------------------------------------------------
 
@@ -86,10 +68,7 @@ int main(int argc, char* argv[]){
 
   start = MPI_Wtime();
   kd_tree = build_kdtree(points, N, NDIM, -1, 0);
-  end = MPI_Wtime() - start;
-  printf("%.5f,%d,%d\n", end, N, size);
-  
-  //free(points);
+
  }
 
  else {
@@ -97,15 +76,13 @@ int main(int argc, char* argv[]){
   }
 
  MPI_Barrier(MPI_COMM_WORLD);
- glue_trees(kd_tree);
-
- MPI_Barrier(MPI_COMM_WORLD);
+ 
  if(rank == 0){
- // print_tree(kd_tree);
- printf("\nFinito\n");
+  end = MPI_Wtime() - start;
+  printf("%.5f,%d,%d\n", end, N, size);
+  free(points);
  }
- MPI_Barrier(MPI_COMM_WORLD);
- printf("%d the last barrier\n", rank);
+
  MPI_Finalize();
  return 0;
 }
@@ -182,7 +159,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  memcpy(node -> split, my_point, sizeof(kpoint *));
 
 //sending right branch and the other paramteres to the right process
- if(size != 1 && (depth < log2(size))){
+ if((depth < log2(size))){
   int dest_rank = rank + (size / pow(2,depth + 1));
   int params[] = {N_right, ndim, my_axis, depth + 1};
   MPI_Send(params, 4, MPI_INT, dest_rank, rank * 100, MPI_COMM_WORLD); // # params
@@ -203,8 +180,6 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
   node -> left = build_kdtree(left_points, N_left, ndim, my_axis, log2(size));
   node -> right = build_kdtree(right_points, N_right, ndim, my_axis, log2(size));
  }
-
- //free(temp);
 
 return node;
 }
