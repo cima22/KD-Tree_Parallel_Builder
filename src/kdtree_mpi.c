@@ -116,18 +116,6 @@ kpoint * initialize(int n){
 knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  if(n == 0) return NULL;
 
- if(n == 1){
-  knode * leaf = (knode *) malloc(sizeof(knode));
-  leaf -> axis  = 0;
-  memcpy(leaf->split, points, sizeof(kpoint*));
-  leaf -> left = NULL;
-  leaf -> right = NULL;
-  #ifdef DEBUG
-   printf("\nrank:%d\n\n(%f, %f)\n\n", rank, points[0][0], points[0][1]);
-  #endif
-  return leaf;
- }
- 
  knode * node = (knode *) malloc(sizeof(knode));
  if(node == NULL){
   printf("Problem with malloc()");
@@ -139,7 +127,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
  #ifdef DEBUG
-  printf("\n%d:\n", rank);
+  printf("\nrank: %d, axis: %d, (%f,%f)\n", rank, my_axis, (*my_point)[0], (*my_point)[1]);
   for(int i = 0; i < n; i++)
    printf("(%f, %f)\n", points[i][0], points[i][1]);
   printf("\n\n");
@@ -157,7 +145,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
 
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
-
+ 
 //sending right branch and the other paramteres to the right process
  if((depth < log2(size))){
   int dest_rank = rank + (size / pow(2,depth + 1));
@@ -213,9 +201,9 @@ knode * start_build(){
 int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
 
 // choose_splitting_point() ---------------------------------------------------------------------------------
-kpoint* choose_splitting_point(kpoint* points, int n, int ndim, int axis){
+kpoint * choose_splitting_point(kpoint* points, int n, int ndim, int axis){
  my_qsort(points, n, sizeof(kpoint), axis);
- kpoint * median = (kpoint*) points[(int) (n/2)]; // median of the sorted points
+ kpoint * median = (kpoint *) points[(int) (n/2)]; // median of the sorted points
  return median;
 }
 
