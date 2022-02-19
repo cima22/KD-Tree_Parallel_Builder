@@ -11,7 +11,6 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-//#define DEBUG 0
 
 //------------- Data Structures --------------------------------------------------------------
 
@@ -163,7 +162,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  }
  
  // if there are no left processes, the processes continues indipentendly
- else if(depth >= log2(size)){
+ else {
   right_points = (kpoint *) right_points;
   node -> left = build_kdtree(left_points, N_left, ndim, my_axis, log2(size));
   node -> right = build_kdtree(right_points, N_right, ndim, my_axis, log2(size));

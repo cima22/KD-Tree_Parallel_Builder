@@ -11,7 +11,7 @@ typedef float float_t;
 typedef double float_t;
 #endif
 #define NDIM 2
-//#define DEBUG 0
+
 //-------------------- Data Structures --------------------------------------------------------
 
 typedef float_t kpoint[NDIM];
@@ -100,7 +100,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim){
  knode * tree;
  #pragma omp parallel
  #pragma omp master
- tree = build_kdtree_ric(points, n, ndim, -1);
+  tree = build_kdtree_ric(points, n, ndim, -1);
  return tree;
 }
 
@@ -108,22 +108,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
  if(n == 0){ return NULL;}
 
- if(n == 1){
-  knode * leaf = (knode *) malloc(sizeof(knode));
-  leaf -> axis = axis;
-  memcpy(leaf->split, points, sizeof(kpoint *));
-  leaf -> left = NULL;
-  leaf -> right = NULL;
-  #ifdef DEBUG 
-   printf("\n\n(%f, %f)\n\n", points[0][0], points[0][1]);
-  #endif
-   return leaf;
- }
-
-// kpoint * temp = (kpoint *) malloc(n * sizeof(kpoint));
-// memcpy(temp, points, n * sizeof(kpoint));
-
- knode * node = (knode *) malloc(sizeof(knode));
+  knode * node = (knode *) malloc(sizeof(knode));
   if(node == NULL){
   printf("Problem with malloc()");
   return NULL;
@@ -134,7 +119,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
 
  #ifdef DEBUG
- printf("\n\n%d\n", n);
+ printf("\nid: %d, axis: %d, split: (%f,%f)\n", omp_get_thread_num(), my_axis, (*my_point)[0], (*my_point)[1]);
  for(int i = 0; i < n; i++)
   printf("(%f, %f)\n", points[i][0], points[i][1]);
  printf("\n\n");
@@ -152,10 +137,6 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
  node -> axis = my_axis;
  memcpy(node -> split, my_point, sizeof(kpoint *));
-
- #ifdef DEGUG
- printf("\n%d\n", omp_get_num_threads());
- #endif
 
  #pragma omp task
  node -> left  = build_kdtree_ric(left_points, N_left, ndim, my_axis);
