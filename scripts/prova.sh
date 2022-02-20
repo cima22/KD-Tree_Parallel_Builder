@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #PBS -q dssc
-#PBS -l nodes=2:ppn=24
+#PBS -l nodes=2:ppn=16
 #PBS -l walltime=02:00:00
-#PBS -N tReE
+#PBS -N tReE_r
 
 module load openmpi-4.1.1+gnu-9.3.0
 
@@ -17,7 +17,7 @@ gcc -fopenmp -std=gnu99 -o ../bin/kdtree_omp kdtree_omp.c
 mpicc -std=gnu99 -o ../bin/kdtree_mpi kdtree_mpi.c -lm
 
 cd ../bin
-for t in 1 2 4 8 16 24 32 64 128 256
+for t in 1 2 4 8 16 32 64 128 256
 do
  export OMP_NUM_THREADS=$t
  ./kdtree_omp $N >> ../times/omp.csv

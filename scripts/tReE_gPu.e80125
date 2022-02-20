@@ -1,0 +1,57 @@
+loading dependency gnu/9.3.0
+loading dependency numactl/2.0.13
+loading dependency hwloc/2.2.0
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33018] 1 more process has sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33018] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33124] 3 more processes have sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33124] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33225] 7 more processes have sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33225] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33324] 15 more processes have sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33324] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode001
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33493] 31 more processes have sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33493] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   ct1pg-gnode003
+  Local device: mlx5_0
+--------------------------------------------------------------------------
+[ct1pg-gnode001:33779] 63 more processes have sent help message help-mpi-btl-openib.txt / error in device init
+[ct1pg-gnode001:33779] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
