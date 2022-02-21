@@ -17,7 +17,7 @@ mpicc -std=gnu99 -o ../bin/kdtree_mpi kdtree_mpi.c -lm
 
 cd ../bin
 
-for t in 1 2 4 8 16 32 48 64 128 256
+for t in {1..96..5}
 do
  export OMP_NUM_THREADS=$t
  ./kdtree_omp $N >> ../times/omp_gpu.csv
