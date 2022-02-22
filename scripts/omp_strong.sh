@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -q dssc
+#PBS -q dssc_gpu
 #PBS -l nodes=1:ppn=48
 #PBS -l walltime=02:00:00
 #PBS -N omp_strrrrong
