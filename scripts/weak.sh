@@ -17,11 +17,11 @@ mpicc -std=gnu99 -o ../bin/kdtree_mpi kdtree_mpi.c -lm
 
 cd ../bin
 
-for t in {1..96..5}
-do
- export OMP_NUM_THREADS=$t
- ./kdtree_omp $((N * t)) >> ../times/omp_gpu_weak.csv
-done
+#for t in {1..96..5}
+#do
+# export OMP_NUM_THREADS=$t
+# ./kdtree_omp $((N * t)) >> ../times/omp_gpu_weak.csv
+#done
 
 for p in 1 2 4 8 16 32 64
 do
