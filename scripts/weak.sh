@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #PBS -q dssc_gpu
-#PBS -l nodes=2:ppn=48
-#PBS -l walltime=01:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=03:00:00
 #PBS -N tReE_gPu_WeAk
 
 N=10000000
@@ -17,13 +17,18 @@ mpicc -std=gnu99 -o ../bin/kdtree_mpi kdtree_mpi.c -lm
 
 cd ../bin
 
-for t in 1 2 4 8 16 32 64
-do
- export OMP_NUM_THREADS=$t
- ./kdtree_omp $((N * t)) >> ../times/omp_gpu_weak.csv
-done
+#for t in 1 2 4 8 16 32 64
+#do
+# export OMP_NUM_THREADS=$t
+# ./kdtree_omp $((N * t)) >> ../times/omp_gpu_weak.csv
+#done
 
 #for p in 1 2 4 8 16 32 64
 #do
 # mpirun -np $p ./kdtree_mpi $((N * p)) >> ../times/mpi_gpu_weak.csv
 #done
+
+for p in 1 2 4 8 16 32 64
+do
+ mpirun -np 1 ./kdtree_mpi $((N * p)) >> ../times/weak_serial.csv
+done
