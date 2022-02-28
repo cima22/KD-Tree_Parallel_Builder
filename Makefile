@@ -39,6 +39,8 @@ debug:
 	${CC_MPI} ${DBG_FLAGS} ${MPI_FLAGS} -o ${DBG_PATH}/kdtree_mpi ${SRC_PATH}/kdtree_mpi.c ${LDLIBS}
 
 clean:
+	@echo "Removing all the objects and binaries..."
 	rm -f ${BIN_PATH}/kdtree_omp ${BIN_PATH}/kdtree_mpi ${BIN_PATH}/kdtree_serial
 	rm -f ${OBJ_PATH}/*.o
 	rm -f ${DBG_PATH}/kdtree_omp ${DBG_PATH}/kdtree_mpi
+	@echo "Done!"
