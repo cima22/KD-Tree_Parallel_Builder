@@ -10,13 +10,13 @@ module load openmpi-4.1.1+gnu-9.3.0
 N=100000000
 
 cd $PBS_O_HOME/hpc/Assignment2
-echo "timing,dim,procs" > times/mpi_O3.csv
-cd src
-mpicc -O3 -std=gnu99 -o ../bin/kdtree_mpi kdtree_mpi.c -lm
+echo "timing,dim,procs" > times/mpi.csv
 
-cd ../bin
+make
+
+cd bin
 
 for p in 1 2 4 8 16 32 64
 do
- mpirun -np $p ./kdtree_mpi $N >> ../times/mpi_O3.csv
+ mpirun -np $p ./kdtree_mpi $N >> ../times/mpi.csv
 done

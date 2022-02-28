@@ -8,13 +8,13 @@
 N=100000000
 
 cd $PBS_O_HOME/hpc/Assignment2
-echo "timing,dim,threads" > times/omp_O3.csv
-cd src
-gcc -O3 -fopenmp -std=gnu99 -o ../bin/kdtree_omp kdtree_omp.c
+echo "timing,dim,threads" > times/omp.csv
 
-cd ../bin
+make
+
+cd bin
 for t in 1 2 4 8 16 32 64
 do
  export OMP_NUM_THREADS=$t
- ./kdtree_omp $N >> ../times/omp_O3.csv
+ ./kdtree_omp $N >> ../times/omp.csv
 done
