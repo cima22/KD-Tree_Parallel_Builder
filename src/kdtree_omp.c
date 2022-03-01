@@ -20,27 +20,27 @@ typedef struct knode{
 	int axis;
 	kpoint split;
 	struct knode *left, *right;
-} knode;
+} knode; # definition of node
 
 //--------------------- Functions Declaration -------------------------------------------------
 
-knode * build_kdtree(kpoint * points, int n, int ndim);
+knode * build_kdtree(kpoint * points, int n, int ndim); // function that starts the recursive algorithm
 
-knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis);
+knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis); // recursive implementation for building the tree
 
-int choose_splitting_dimension(int axis, int ndim);
+int choose_splitting_dimension(int axis, int ndim); # function for choosing the axis of split
 
-kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis);
+kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis); // function for selecting the median point. Sorts the data set
 
-kpoint * initialize(int n);
+kpoint * initialize(int n); // randomly generates the dataset given as input the size of the problem
 
-void my_qsort(kpoint * points, int n, int el_len, int axis);
+void my_qsort(kpoint * points, int n, int el_len, int axis); // function for sorting according to a direction 
 
 int comp_x(const void * el1, const void * el2);
 
 int comp_y(const void * el1, const void * el2);
 
-void print_tree(knode * tree);
+void print_tree(knode * tree); 
 
 //---------------------- Main -----------------------------------------------------------------
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
 
  int threads = 1;
  double start, end; 
- int N = argc >=2 ? atoi(argv[1]) : 100000000;
+ int N = argc >=2 ? atoi(argv[1]) : 100000000; // Dimension of the set, 10000000 is default
 
  kpoint * points = initialize(N);
 
@@ -98,15 +98,15 @@ kpoint * initialize(int n){
 
 knode * build_kdtree(kpoint * points, int n, int ndim){
  knode * tree;
- #pragma omp parallel
- #pragma omp master
+ #pragma omp parallel // create parallel region
+ #pragma omp master // the master starts the build
   tree = build_kdtree_ric(points, n, ndim, -1);
  return tree;
 }
 
 knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
- if(n == 0){ return NULL;}
+ if(n == 0){ return NULL;} // if there are no points, return NULL
 
   knode * node = (knode *) malloc(sizeof(knode));
   if(node == NULL){
@@ -116,7 +116,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
  int my_axis = choose_splitting_dimension(axis, ndim);
 
- kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
+ kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis); // at this point points will be sorted according to the axis
 
  #ifdef DEBUG
  printf("\nid: %d, axis: %d, split: (%f,%f)\n", omp_get_thread_num(), my_axis, (*my_point)[0], (*my_point)[1]);
@@ -128,7 +128,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
  int N_left, N_right;
  int median_index = (int) (n/2);
 
- N_left = median_index; // #points before median
+ N_left = median_index; // points before median
  N_right = n % 2 == 0 ? median_index - 1 : median_index; // points after median 
 
  kpoint * left_points, * right_points;
@@ -151,7 +151,7 @@ knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis){
 
 // choose_splitting_dimension() --------------------------------------------------------
 
-int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; }
+int choose_splitting_dimension(int axis, int ndim){ return (axis + 1) % ndim; } // round-robin through axis
 
 // choose_splitting_point() -----------------------------------------------------------
 
