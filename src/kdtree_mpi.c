@@ -21,7 +21,7 @@ typedef struct knode{
 	int axis;
 	kpoint split;
 	struct knode *left, *right;
-} knode;
+} knode; // node definition
 
 int size, rank;
 
@@ -30,17 +30,17 @@ knode * kd_tree;
 //------------- Function Declaration ---------------------------------------------------------
 
 
-knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth);
+knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth); // function for the build of the tree
 
-knode * start_build();
+knode * start_build(); // function that allows that starts the build for the non-master processes 
 
-int choose_splitting_dimension(int axis, int ndim);
+int choose_splitting_dimension(int axis, int ndim); // function for choosing the median
 
-kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis);
+kpoint * choose_splitting_point(kpoint * points, int n, int ndim, int axis); // function that sorts the data set according to the axis and returns the median
 
-kpoint * initialize(int n);
+kpoint * initialize(int n); // function that generates the dataset
 
-void my_qsort(kpoint * points, int n, int el_len, int axis);
+void my_qsort(kpoint * points, int n, int el_len, int axis); // function for the data set an array given the axis
 
 int comp_x(const void * el1, const void * el2);
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]){
  MPI_Init(&argc, &argv);
 
  double start, end;
- int N = argc >= 2 ? atoi(argv[1]) : 100000000;
+ int N = argc >= 2 ? atoi(argv[1]) : 100000000; // dimension of the data set
 
  kpoint * points;
 
@@ -66,12 +66,12 @@ int main(int argc, char* argv[]){
   points = initialize(N);
 
   start = MPI_Wtime();
-  kd_tree = build_kdtree(points, N, NDIM, -1, 0);
+  kd_tree = build_kdtree(points, N, NDIM, -1, 0); // the master process starts to build the tree
 
  }
 
  else {
-  kd_tree = start_build();
+  kd_tree = start_build(); // the other processes starts to wait for data
   }
 
  MPI_Barrier(MPI_COMM_WORLD);
@@ -79,6 +79,7 @@ int main(int argc, char* argv[]){
  if(rank == 0){
   end = MPI_Wtime() - start;
   printf("%.5f,%d,%d\n", end, N, size);
+
   free(points);
  }
 
@@ -123,10 +124,10 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
 
  int my_axis = choose_splitting_dimension(axis, ndim);
 
- kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis);
+ kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis); // at this point the data set is sorted according to the axis
 
  #ifdef DEBUG
-  printf("\nrank: %d, axis: %d, (%f,%f)\n", rank, my_axis, (*my_point)[0], (*my_point)[1]);
+  printf("\nrank: %d, axis: %d, split: (%f,%f)\n", rank, my_axis, (*my_point)[0], (*my_point)[1]);
   for(int i = 0; i < n; i++)
    printf("(%f, %f)\n", points[i][0], points[i][1]);
   printf("\n\n");
@@ -191,7 +192,7 @@ knode * start_build(){
  }
  free(coords);
 
- knode * sub_tree = build_kdtree(points, params[0], params[1], params[2], params[3]);
+ knode * sub_tree = build_kdtree(points, params[0], params[1], params[2], params[3]); // start building the subtree
  //print_tree(sub_tree);
  return sub_tree;
 }

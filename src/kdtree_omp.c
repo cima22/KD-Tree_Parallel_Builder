@@ -20,7 +20,7 @@ typedef struct knode{
 	int axis;
 	kpoint split;
 	struct knode *left, *right;
-} knode; # definition of node
+} knode; // definition of node
 
 //--------------------- Functions Declaration -------------------------------------------------
 
@@ -28,7 +28,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim); // function that starts 
 
 knode * build_kdtree_ric(kpoint * points, int n, int ndim, int axis); // recursive implementation for building the tree
 
-int choose_splitting_dimension(int axis, int ndim); # function for choosing the axis of split
+int choose_splitting_dimension(int axis, int ndim); // function for choosing the axis of split
 
 kpoint* choose_splitting_point(kpoint * points, int n, int ndim, int axis); // function for selecting the median point. Sorts the data set
 
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
  #pragma omp master
  threads = omp_get_num_threads();
  
- printf("%.4f,%d,%d\n", end, N, threads);
+ printf("\n%.4f,%d,%d\n", end, N, threads);
  
  free(points);
 

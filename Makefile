@@ -38,6 +38,12 @@ debug:
 	${CC} ${DBG_FLAGS} ${OMP_FLAGS} -o ${DBG_PATH}/kdtree_omp ${SRC_PATH}/kdtree_omp.c
 	${CC_MPI} ${DBG_FLAGS} ${MPI_FLAGS} -o ${DBG_PATH}/kdtree_mpi ${SRC_PATH}/kdtree_mpi.c ${LDLIBS}
 
+view:
+	${CC} ${OMP_FLAGS} -D DEBUG -o ${OBJ_PATH}/kdtree_omp.o -c ${SRC_PATH}/kdtree_omp.c
+	${CC} ${OMP_FLAGS} -o ${BIN_PATH}/kdtree_omp ${OBJ_PATH}/kdtree_omp.o
+	${CC_MPI} ${MPI_FLAGS} -D DEBUG -o ${OBJ_PATH}/kdtree_mpi.o -c ${SRC_PATH}/kdtree_mpi.c
+	${CC_MPI} -o ${BIN_PATH}/kdtree_mpi ${OBJ_PATH}/kdtree_mpi.o ${LDLIBS}
+
 clean:
 	@echo "Removing all the objects and binaries..."
 	rm -f ${BIN_PATH}/kdtree_omp ${BIN_PATH}/kdtree_mpi ${BIN_PATH}/kdtree_serial
