@@ -18,6 +18,11 @@ To get debuggable executables just type
 make debug
 ```
 the executables will be created in the debug folder.
+### View
+To compile the executable version that prints the workflow done by the program just type
+```bash
+make view
+```
 ## Execute
 ### Input
 Both versions expect as arguments the size of the dataset. The dataset of 2-dimensional points will then be randomly generated. If no size is given, the program will build the kdtree with a size of N = 10000000.
@@ -27,6 +32,12 @@ The output of the program will be the time taken to build the tree, the size of 
 0.1703,100000,4
 ```
 tells that the build took 0.1703 seconds, with a set size of 100000 using 4 processes or threads.
+### Output - view
+If the program has been compiled using
+```bash
+make view
+```
+Every process/thread will print, at every split, which node has been generated and based on which points.
 ### OpenMP version
 On the root folder, just go with
 ```bash
