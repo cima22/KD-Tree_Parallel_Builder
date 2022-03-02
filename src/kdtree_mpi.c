@@ -127,7 +127,7 @@ knode * build_kdtree(kpoint * points, int n, int ndim, int axis, int depth){
  kpoint * my_point = choose_splitting_point(points, n, ndim, my_axis); // at this point the data set is sorted according to the axis
 
  #ifdef DEBUG
-  printf("\nrank: %d, axis: %d, split: (%f,%f)\n", rank, my_axis, (*my_point)[0], (*my_point)[1]);
+  printf("\nrank: %d, axis: %d, split: (%f,%f), based on sorted dataset:\n", rank, my_axis, (*my_point)[0], (*my_point)[1]);
   for(int i = 0; i < n; i++)
    printf("(%f, %f)\n", points[i][0], points[i][1]);
   printf("\n\n");
