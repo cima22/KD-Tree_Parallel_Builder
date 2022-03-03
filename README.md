@@ -41,12 +41,12 @@ Every process/thread will print, at every split, which node has been generated a
 ### OpenMP version
 On the root folder, just go with
 ```bash
-bin/kdtree_omp N
+bin/kdtree_omp.out N
 ```
 where N is the size of the dataset.
 ### MPI version
 Be sure to have a propper implementation for the MPI Standard, e.g. OpenMPI. Then go with
 ```bash
-mpirun -np p bin/kdtree_mpi N
+mpirun -np p bin/kdtree_mpi.out N
 ```
 where p is the number of processes you want to use.
