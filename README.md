@@ -1,3 +1,4 @@
+![GitHub](https://img.shields.io/github/license/cima22/Parallel_Build_KD_Tree)
 # Foundations of High Performance Computing
 ## Parallel build of a kdtree
 Project related to the course "Foundations of High Performance Computing" of the Master's Degree in Computational Science and Engineering @ UniTS. The purpose of this assignment is to develop both OpenMP and MPI versions of a program that builds a kdtree.
